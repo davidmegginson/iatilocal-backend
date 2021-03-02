@@ -1,4 +1,4 @@
-import xpath
+import xpath, iatilocal.mappings
 
 class IATIActivity:
     """ Wrapper around a DOM node for an iati-activity to apply business logic 
@@ -22,8 +22,25 @@ class IATIActivity:
         return {
             "ref": node.getAttribute("ref"),
             "type": node.getAttribute("type"),
+            "type_label": iatilocal.mappings.ORGANISATION_TYPES.get(node.getAttribute("type"), "Unknown"),
             "narrative": self._narrative(node),
         }
+
+    @property
+    def participating_orgs (self):
+        """ Return a list of dicts representing participating orgs """
+        org_list = []
+        nodes = xpath.find("participating-org", self.node)
+        for node in nodes:
+            org_list.append({
+                "ref": node.getAttribute("ref"),
+                "type": node.getAttribute("type"),
+                "type_label": iatilocal.mappings.ORGANISATION_TYPES.get(node.getAttribute("type"), "Unknown"),
+                "role": node.getAttribute("role"),
+                "role_label": iatilocal.mappings.ORGANISATION_ROLES.get(node.getAttribute("role"), "Unknown"),
+                "narrative": self._narrative(node),
+            })
+        return org_list
 
     @property
     def iati_identifier (self):

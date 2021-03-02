@@ -55,6 +55,7 @@ if __name__ == "__main__":
         activity = IATIActivity(activity_node)
         json_out.append({
             "reporting-org": activity.reporting_org,
+            "participating-orgs": activity.participating_orgs,
             "iati-identifier": activity.iati_identifier,
             "title": activity.title.get("en"),
             "description": activity.description.get("en"),
