@@ -1,4 +1,6 @@
-import xpath, iatilocal.mappings
+import xpath
+
+from iatilocal.mappings import get_label
 
 class IATIActivity:
     """ Wrapper around a DOM node for an iati-activity to apply business logic 
@@ -22,7 +24,7 @@ class IATIActivity:
         return {
             "ref": node.getAttribute("ref"),
             "type": node.getAttribute("type"),
-            "type_label": iatilocal.mappings.ORGANISATION_TYPES.get(node.getAttribute("type"), "Unknown"),
+            "type_label": get_label("organisation-type", node.getAttribute("type")),
             "narrative": self._narrative(node),
         }
 
@@ -35,9 +37,9 @@ class IATIActivity:
             org_list.append({
                 "ref": node.getAttribute("ref"),
                 "type": node.getAttribute("type"),
-                "type_label": iatilocal.mappings.ORGANISATION_TYPES.get(node.getAttribute("type"), "Unknown"),
+                "type_label": get_label("organisation-type", node.getAttribute("type")),
                 "role": node.getAttribute("role"),
-                "role_label": iatilocal.mappings.ORGANISATION_ROLES.get(node.getAttribute("role"), "Unknown"),
+                "role_label": get_label("organisation-role", node.getAttribute("role")),
                 "narrative": self._narrative(node),
             })
         return org_list
@@ -49,7 +51,12 @@ class IATIActivity:
 
     @property
     def activity_status (self):
-        return xpath.find("activity-status", self.node)[0].getAttribute("code")
+        code = xpath.find("activity-status", self.node)[0].getAttribute("code")
+        return {
+            "code": code,
+            "label": get_label("activity-status", code),
+        }
+            
 
     @property
     def title (self):
