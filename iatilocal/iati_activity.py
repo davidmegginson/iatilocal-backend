@@ -8,19 +8,19 @@ class IATIActivity:
 
     """
 
-    def __init__ (self, node):
+    def __init__ (self, activity_node):
         """ Create a wrapper around a DOM node for an iati-activity """
-        self.node = node
+        self.activity_node = activity_node
 
     @property
     def lang (self):
         """ Return the default language for the activity report """
-        return self.node.getAttribute("xml:lang")
+        return self.activity_node.getAttribute("xml:lang")
 
     @property
     def reporting_org (self):
         """ Return a dict of properties describing the reporting org """
-        node = xpath.find("reporting-org", self.node)[0]
+        node = self.get_node("reporting-org")
         return {
             "ref": node.getAttribute("ref"),
             "type": node.getAttribute("type"),
@@ -32,8 +32,7 @@ class IATIActivity:
     def participating_orgs (self):
         """ Return a list of dicts representing participating orgs """
         org_list = []
-        nodes = xpath.find("participating-org", self.node)
-        for node in nodes:
+        for node in self.get_nodes("participating-org"):
             org_list.append({
                 "ref": node.getAttribute("ref"),
                 "type": node.getAttribute("type"),
@@ -51,7 +50,7 @@ class IATIActivity:
 
     @property
     def activity_status (self):
-        code = xpath.find("activity-status", self.node)[0].getAttribute("code")
+        code = self.get_node("activity-status").getAttribute("code")
         return {
             "code": code,
             "label": get_label("activity-status", code),
@@ -61,46 +60,46 @@ class IATIActivity:
     @property
     def title (self):
         """ Return a dict of titles, keyed by ISO language code """
-        return self._narrative(xpath.find("title", self.node)[0])
+        return self._narrative(self.get_node("title"))
 
     @property
     def description (self):
         """ Return a dict of descriptions, keyed by ISO language code """
-        return self._narrative(xpath.find("description", self.node)[0])
+        return self._narrative(self.get_node("description"))
 
     @property
     def start_date_planned (self):
         """ Return the planned start date, or None if not defined """
-        node = xpath.find("activity-date[@type=1]", self.node)
+        node = self.get_node("activity-date[@type=1]")
         if node:
-            return node[0].getAttribute("iso-date")
+            return node.getAttribute("iso-date")
         else:
             return None
 
     @property
     def start_date_actual (self):
         """ Return the actual start date, or None if not defined """
-        node = xpath.find("activity-date[@type=2]", self.node)
+        node = self.get_node("activity-date[@type=2]")
         if node:
-            return node[0].getAttribute("iso-date")
+            return node.getAttribute("iso-date")
         else:
             return None
 
     @property
     def end_date_planned (self):
         """ Return the planned end date, or None if not defined """
-        node = xpath.find("activity-date[@type=3]", self.node)
+        node = self.get_node("activity-date[@type=3]")
         if node:
-            return node[0].getAttribute("iso-date")
+            return node.getAttribute("iso-date")
         else:
             return None
 
     @property
     def end_date_actual (self):
         """ Return the actual end date, or None if not defined """
-        node = xpath.find("activity-date[@type=4]", self.node)
+        node = self.get_node("activity-date[@type=4]")
         if node:
-            return node[0].getAttribute("iso-date")
+            return node.getAttribute("iso-date")
         else:
             return None
 
@@ -108,8 +107,7 @@ class IATIActivity:
     def sectors (self):
         """ Return sectors as a map, keyed by vocabulary, then by sector code within the vocabulary """
         sector_map = {}
-        nodes = xpath.find("sector", self.node)
-        for node in nodes:
+        for node in self.get_nodes("sector"):
             vocabulary = node.getAttribute("vocabulary")
             if not vocabulary in sector_map:
                 sector_map[vocabulary] = {}
@@ -118,9 +116,27 @@ class IATIActivity:
                 "narrative": self._narrative(node),
             }
         return sector_map
+
+    @property
+    def locations (self):
+        """ Return locations as a list. """
+        locations = []
+        for node in self.get_nodes("location"):
+            pass
+        return locations
+
+    def get_node (self, xpath_string):
+        nodes = self.get_nodes(xpath_string)
+        if len(nodes) == 0:
+            return None
+        else:
+            return nodes[0]
+
+    def get_nodes (self, xpath_string):
+        return xpath.find(xpath_string, self.activity_node)
         
     def _text (self, expr, first=True):
-        nodes = xpath.find(expr, self.node)
+        nodes = self.get_nodes(expr)
         if not nodes:
             return None
         elif first:
