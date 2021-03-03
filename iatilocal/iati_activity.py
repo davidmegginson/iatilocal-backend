@@ -122,18 +122,38 @@ class IATIActivity:
         """ Return locations as a list. """
         locations = []
         for node in self.get_nodes("location"):
-            pass
+            location = {
+                "ref": node.getAttribute("ref"),
+            }
+
+            narrative_node = self.get_node("name", base_node=node)
+            if narrative_node:
+                location["narrative"] = self._narrative(narrative_node)
+
+            location_class_node = self.get_node("location-class", base_node=node)
+            if location_class_node:
+                location["location-class"] = location_class_node.getAttribute("code")
+                location["location-class-label"] = get_label("location-class", location_class_node.getAttribute("code"))
+
+            feature_designation_node = self.get_node("feature-designation", base_node=node)
+            if feature_designation_node:
+                location["feature-designation-code"] = feature_designation_node.getAttribute("code")
+                
+            locations.append(location)
+            
         return locations
 
-    def get_node (self, xpath_string):
-        nodes = self.get_nodes(xpath_string)
+    def get_node (self, xpath_string, base_node=None):
+        nodes = self.get_nodes(xpath_string, base_node)
         if len(nodes) == 0:
             return None
         else:
             return nodes[0]
 
-    def get_nodes (self, xpath_string):
-        return xpath.find(xpath_string, self.activity_node)
+    def get_nodes (self, xpath_string, base_node=None):
+        if base_node is None:
+            base_node = self.activity_node
+        return xpath.find(xpath_string, base_node)
         
     def _text (self, expr, first=True):
         nodes = self.get_nodes(expr)

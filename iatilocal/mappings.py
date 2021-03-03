@@ -38,6 +38,13 @@ IATI_CODE_LISTS = {
         "5": "Cancelled",
         "6": "Suspended",
     },
+
+    "location-class": {
+        "1": "Administrative Region",
+        "2": "Populated Place",
+        "3": "Structure",
+        "4": "Other Topographical Feature",
+    },
 }
 
 def get_label (type, code):

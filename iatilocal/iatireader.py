@@ -60,6 +60,7 @@ if __name__ == "__main__":
             "title": activity.title.get("en"),
             "description": activity.description.get("en"),
             "sectors": activity.sectors,
+            "locations": activity.locations,
             "start_date_planned": activity.start_date_planned,
             "start_date_actual": activity.start_date_actual,
             "end_date_planned": activity.end_date_planned,
