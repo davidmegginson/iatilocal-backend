@@ -1,5 +1,5 @@
 import collections, datetime, requests, xml.dom.pulldom
-from iatilocal.iati_activity import IATIActivity
+from iatilocal.iatiwrapper import IATIActivity
 
 API_ENDPOINT = "http://www.d-portal.org/q"
 
@@ -57,8 +57,8 @@ if __name__ == "__main__":
             "reporting-org": activity.reporting_org,
             "participating-orgs": activity.participating_orgs,
             "iati-identifier": activity.iati_identifier,
-            "title": activity.title.get("en"),
-            "description": activity.description.get("en"),
+            "title": activity.title,
+            "description": activity.description,
             "sectors": activity.sectors,
             "locations": activity.locations,
             "start_date_planned": activity.start_date_planned,
