@@ -31,17 +31,18 @@ class IATIActivity:
     @property
     def participating_orgs (self):
         """ Return a list of dicts representing participating orgs """
-        org_list = []
+        org_map = {}
         for node in self.get_nodes("participating-org"):
-            org_list.append({
+            role_label = self.get_label("organisation-role", "@role", node)
+            org_map.setdefault(role_label, []).append({
                 "ref": self.get_value("@ref", node),
                 "type": self.get_value("@type", node),
                 "type_label": self.get_label("organisation-type", "@type", node),
                 "role": self.get_value("@role", node),
-                "role_label": self.get_label("organisation-role","@role", node),
+                "role_label": role_label,
                 "narrative": self.get_narrative(".", node),
             })
-        return org_list
+        return org_map
 
     @property
     def iati_identifier (self):
