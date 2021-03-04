@@ -39,33 +39,62 @@ class IATIActivityIterator:
             for event, node in dom:
                 if event == xml.dom.pulldom.START_ELEMENT and node.tagName == 'iati-activity':
                     dom.expandNode(node)
-                    self.queue.append(node)
+                    self.queue.append(IATIActivity(node))
             if len(self.queue) == 0:
                 raise StopIteration()
             else:
                 return self.__next__()
 
 if __name__ == "__main__":
-    import json
-    activity_nodes = IATIActivityIterator(humanitarian=True, country_code="so", year_min=2021, year_max=2021)
+    import csv, sys
 
-    json_out = []
+    output = csv.writer(sys.stdout)
+    output.writerow([
+        "Identifier",
+        "Source",
+        "Implementing orgs",
+        "Programming orgs",
+        "Funding orgs",
+        "Humanitarian clusters",
+        "OECD sectors",
+        "Recipient countries",
+        "Locations",
+        "Start date planned",
+        "Start date actual",
+        "End date planned",
+        "End date actual",
+    ])
+    output.writerow([
+        "#activity+id",
+        "#meta+source",
+        "#org+impl+name+list",
+        "#org+prog+name+list",
+        "#org+funder+name+list",
+        "#sector+cluster+list",
+        "#sector+oecd+list",
+        "#country+code+v_iso2",
+        "#loc+name+list",
+        "#date+start+planned",
+        "#date+start+actual",
+        "#date+end+planned",
+        "#date+end+actual",
+    ])
     
-    for activity_node in activity_nodes:
-        activity = IATIActivity(activity_node)
-        json_out.append({
-            "reporting-org": activity.reporting_org,
-            "participating-orgs": activity.participating_orgs,
-            "iati-identifier": activity.iati_identifier,
-            "title": activity.title,
-            "description": activity.description,
-            "sectors": activity.sectors,
-            "locations": activity.locations,
-            "start_date_planned": activity.start_date_planned,
-            "start_date_actual": activity.start_date_actual,
-            "end_date_planned": activity.end_date_planned,
-            "end_date_actual": activity.end_date_actual,
-            "activity_status": activity.activity_status,
-        })
+    activities = IATIActivityIterator(humanitarian=True, country_code="so", year_min=2019, year_max=2021)
+    for activity in activities:
 
-    print(json.dumps(json_out, indent=2))
+        output.writerow([
+            activity.iati_identifier,
+            "IATI",
+            " | ".join([org["narrative"].get("en", "") for org in activity.participating_orgs.get("Implementing", [])]),
+            " | ".join([org["narrative"].get("en", "") for org in activity.participating_orgs.get("Accountable", [])]),
+            " | ".join([org["narrative"].get("en", "") for org in activity.participating_orgs.get("Funding", [])]),
+            " | ".join([sector["narrative"].get("en", "") for sector in activity.sectors.get("10", {}).values()]),
+            " | ".join([sector["narrative"].get("en", "") for sector in activity.sectors.get("1", {}).values()]),
+            " | ".join([country["code"] for country in activity.recipient_countries]),
+            " | ".join([location["narrative"].get("en", "") for location in activity.locations]),
+            activity.start_date_planned,
+            activity.start_date_actual,
+            activity.end_date_planned,
+            activity.end_date_actual,
+        ])

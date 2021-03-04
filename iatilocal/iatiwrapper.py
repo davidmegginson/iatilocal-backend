@@ -85,7 +85,7 @@ class IATIActivity:
     @property
     def end_date_actual (self):
         """ Return the actual end date, or None if not defined """
-        return self.get_node("activity-date[@type=4]/@iso-date")
+        return self.get_value("activity-date[@type=4]/@iso-date")
 
     @property
     def sectors (self):
@@ -100,6 +100,17 @@ class IATIActivity:
         return sector_map
 
     @property
+    def recipient_countries (self):
+        """ Return recipient countries as a list. """
+        countries = []
+        for node in self.get_nodes("recipient-country"):
+            countries.append({
+                "code": self.get_value("@code", node),
+                "percentage": self.get_value("@percentage", node),
+            })
+        return countries
+
+    @property
     def locations (self):
         """ Return locations as a list. """
         locations = []
@@ -109,7 +120,7 @@ class IATIActivity:
                 "narrative": self.get_narrative("name", node),
                 "location-class": self.get_value("location-class/@code", node),
                 "location-class-label": self.get_label("location-class", "location-class/@code", node),
-                "feature-designation": self.get_value("feature-designation/@code"),
+                "feature-designation": self.get_value("feature-designation/@code", node),
             })
         return locations
 
@@ -140,7 +151,7 @@ class IATIActivity:
         if node:
             return self._narrative(node)
         else:
-            return None
+            return {}
 
     def get_node (self, xpath_string, base_node=None):
         """ Look up a single DOM node by XPath """
